@@ -43,7 +43,6 @@ export class MicrophoneRecorder {
       navigator.webkitGetUserMedia ||
       navigator.mozGetUserMedia ||
       navigator.msGetUserMedia;
-    console.log("in here", navigator.getUserMedia);
 
     if (mediaRecorder) {
       if (audioCtx && audioCtx.state === "suspended") {
@@ -64,7 +63,6 @@ export class MicrophoneRecorder {
         }
       }
     } else if (navigator.mediaDevices) {
-      console.log("in here for media devices ", navigator.mediaDevices);
       navigator.mediaDevices
         .getUserMedia(constraints)
         .then(str => {
@@ -185,7 +183,13 @@ export class MicrophoneRecorderMp3 {
 
   startRecording = () => {
     startTime = Date.now();
+    navigator.getUserMedia =
+      navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.msGetUserMedia;
 
+    console.log("user media ", navigator.getUserMedia);
     if (mediaRecorder) {
       if (audioCtx && audioCtx.state === "suspended") {
         audioCtx.resume();
@@ -207,6 +211,44 @@ export class MicrophoneRecorderMp3 {
     } else if (navigator.mediaDevices) {
       console.log("getUserMedia supported.");
       navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(async str => {
+          stream = str;
+          const { recorderParams } = mediaOptions;
+          mediaRecorder = new Recorder({
+            wasmURL,
+            shimURL,
+            ...recorderParams
+          });
+
+          try {
+            await mediaRecorder.init();
+
+            if (onStartCallback) {
+              onStartCallback();
+            }
+
+            audioCtx = AudioContext.getAudioContext();
+            audioCtx.resume().then(() => {
+              analyser = AudioContext.getAnalyser();
+              mediaRecorder.startRecording();
+              if (onDataCallback) {
+                timeInterval = setInterval(onDataCallback, 10);
+              }
+              const sourceNode = audioCtx.createMediaStreamSource(stream);
+              sourceNode.connect(analyser);
+            });
+          } catch (error) {
+            console.log(JSON.stringify(error, 2, null));
+          }
+        })
+        .catch(error => console.log(JSON.stringify(error, 2, null)));
+    } else if (
+      typeof navigator.mediaDevices.getUserMedia === "undefined" &&
+      typeof navigator.getUserMedia !== "undefined"
+    ) {
+      console.log("moved onto get user media instead supported.");
+      navigator
         .getUserMedia(constraints)
         .then(async str => {
           stream = str;
