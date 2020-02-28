@@ -189,7 +189,6 @@ export class MicrophoneRecorderMp3 {
       navigator.mozGetUserMedia ||
       navigator.msGetUserMedia;
 
-    console.log("user media ", navigator.getUserMedia);
     if (mediaRecorder) {
       if (audioCtx && audioCtx.state === "suspended") {
         audioCtx.resume();
@@ -209,7 +208,6 @@ export class MicrophoneRecorderMp3 {
         }
       }
     } else if (navigator.mediaDevices) {
-      console.log("getUserMedia supported.");
       navigator.mediaDevices
         .getUserMedia(constraints)
         .then(async str => {
@@ -247,7 +245,6 @@ export class MicrophoneRecorderMp3 {
       typeof navigator.mediaDevices.getUserMedia === "undefined" &&
       typeof navigator.getUserMedia !== "undefined"
     ) {
-      console.log("moved onto get user media instead supported.");
       navigator
         .getUserMedia(constraints)
         .then(async str => {
