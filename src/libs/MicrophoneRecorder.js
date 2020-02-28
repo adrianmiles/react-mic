@@ -43,6 +43,7 @@ export class MicrophoneRecorder {
       navigator.webkitGetUserMedia ||
       navigator.mozGetUserMedia ||
       navigator.msGetUserMedia;
+    console.log("in here", navigator.getUserMedia);
 
     if (mediaRecorder) {
       if (audioCtx && audioCtx.state === "suspended") {
@@ -63,6 +64,7 @@ export class MicrophoneRecorder {
         }
       }
     } else if (navigator.mediaDevices) {
+      console.log("in here for media devices ", navigator.mediaDevices);
       navigator.mediaDevices
         .getUserMedia(constraints)
         .then(str => {
